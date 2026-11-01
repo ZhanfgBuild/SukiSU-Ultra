@@ -1205,7 +1205,7 @@ class SettingsViewModel(
             val observed = if (wrote) repo.isAvcSpoofEnabled() else null
             if (wrote && observed == enabled) {
                 repo.execKsudFeatureSave()
-                _uiState.update { it.copy(isAvcSpoofEnabled = observed) }
+                _uiState.update { it.copy(isAvcSpoofEnabled = enabled) }
             } else {
                 // Keep the switch in sync with the kernel, not the tap.
                 if (observed != null) {
