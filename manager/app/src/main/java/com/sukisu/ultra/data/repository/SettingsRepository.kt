@@ -81,7 +81,7 @@ interface SettingsRepository {
     fun setSelinuxHideEnabled(enabled: Boolean): Int
 
     suspend fun getAvcSpoofStatus(): String
-    fun isAvcSpoofEnabled(): Boolean
+    suspend fun isAvcSpoofEnabled(): Boolean
     fun setAvcSpoofEnabled(enabled: Boolean): Boolean
 
     suspend fun getMountHideStatus(): String
