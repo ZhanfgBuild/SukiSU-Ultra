@@ -1199,10 +1199,18 @@ class SettingsViewModel(
 
     fun setAvcSpoofEnabled(enabled: Boolean) {
         viewModelScope.launch(Dispatchers.IO) {
-            if (repo.setAvcSpoofEnabled(enabled)) {
+            val wrote = repo.setAvcSpoofEnabled(enabled)
+            // Avoid reporting success when a kernel/userspace ABI mismatch leaves
+            // the value unchanged after a successful-looking set request.
+            val observed = if (wrote) repo.isAvcSpoofEnabled() else null
+            if (wrote && observed == enabled) {
                 repo.execKsudFeatureSave()
-                _uiState.update { it.copy(isAvcSpoofEnabled = repo.isAvcSpoofEnabled()) }
+                _uiState.update { it.copy(isAvcSpoofEnabled = enabled) }
             } else {
+                // Keep the switch in sync with the kernel, not the tap.
+                if (observed != null) {
+                    _uiState.update { it.copy(isAvcSpoofEnabled = observed) }
+                }
                 withContext(Dispatchers.Main) {
                     Toast.makeText(ksuApp, R.string.settings_avc_spoof_failed, Toast.LENGTH_LONG).show()
                 }

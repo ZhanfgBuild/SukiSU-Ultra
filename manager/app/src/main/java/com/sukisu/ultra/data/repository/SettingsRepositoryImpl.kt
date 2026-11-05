@@ -362,8 +362,12 @@ class SettingsRepositoryImpl : SettingsRepository {
     override fun setSelinuxHideEnabled(enabled: Boolean): Int = Natives.setSelinuxHideEnabled(enabled)
 
     override suspend fun getAvcSpoofStatus(): String = getFeatureStatus("avc_spoof")
-    override fun isAvcSpoofEnabled(): Boolean = Natives.isAvcSpoofEnabled()
-    override fun setAvcSpoofEnabled(enabled: Boolean): Boolean = Natives.setAvcSpoofEnabled(enabled)
+    // Read through the same ksud feature ABI used by the status query. The
+    // Manager's JNI ioctl path can fail if it cannot locate [ksu_driver] in
+    // its own fd table, even while the privileged ksud path is available.
+    override suspend fun isAvcSpoofEnabled(): Boolean = getFeatureValue("avc_spoof") == 1L
+    override fun setAvcSpoofEnabled(enabled: Boolean): Boolean =
+        execKsud("feature set avc_spoof ${if (enabled) 1 else 0}", true)
 
     override suspend fun getMountHideStatus(): String = getFeatureStatus("mount_hide")
 
